@@ -1,0 +1,41 @@
+# Version 1.0
+
+# Base images 基础镜像
+FROM centos
+
+#MAINTAINER 维护者信息
+MAINTAINER tangjianghua 
+
+
+#copy repo
+COPY  files/erlang-22.1-1.el7.x86_64.rpm /tmp
+#copy rabbitmq
+COPY  files/rabbitmq-server-generic-unix-3.7.18.tar.xz /tmp
+#copy init.sh
+ADD  files/init.sh /usr/local/bin/
+
+#环境变量
+#rabbitmq 命令
+ENV RABBIT_HOME /usr/local/rabbitmq
+ENV PATH $RABBIT_HOME/sbin:$PATH
+#rabbitmq用户
+ENV RABBITMQ_USER admin
+ENV RABBITMQ_PASSWORD buybal_123
+
+#解压rabbitmq #移动rabbitmq
+RUN cd /tmp && \
+#安装erlang
+rpm -Uvh erlang-22.1-1.el7.x86_64.rpm && \
+yum install -y erlang && \
+#解压rabbitmq
+tar xvf rabbitmq-server-generic-unix-3.7.18.tar.xz && \
+mv rabbitmq_server-3.7.18 /usr/local/rabbitmq && \
+#启动web管理器
+rabbitmq-plugins enable rabbitmq_management && \
+#授权
+chmod +x /usr/local/bin/init.sh 
+
+CMD ["init.sh"]
+
+#暴露端口
+EXPOSE 5672 15672
