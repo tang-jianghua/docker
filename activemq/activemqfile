@@ -1,0 +1,44 @@
+# This my first activemq Dockerfile
+# Version 1.0
+
+# Base images 基础镜像
+FROM centos
+
+#MAINTAINER 维护者信息
+MAINTAINER tangjianghua 
+
+
+#安装epel源
+RUN yum install -y epel-release \
+#把服务器的包信息下载到本地电脑缓存起来
+yum makecache 
+
+#copy
+COPY  packages/jdk-8u221-linux-x64.tar.gz /home
+
+#RUN 执行以下命令 
+RUN cd /home && tar -zxvf jdk-8u221-linux-x64.tar.gz 
+#创建路径，移动jdk到/usr/java
+RUN mkdir /usr/java && mv /home/jdk1.8.0_221 /usr/java
+#备份profile
+RUN cp /etc/profile /etc/profile.bak
+
+#ENV 设置环境变量
+ENV JAVA_HOME /usr/java/jdk1.8.0_221
+ENV JAVA_HOME /usr/java/jdk1.8.0_221
+ENV PATH $JAVA_HOME/bin:$PATH
+ENV CLASSPATH .:$JAVA_HOME/lib
+
+#copy activemq包
+COPY packages/apache-activemq-5.15.9-bin.tar.gz /home
+
+#进入data 解压activemq 重命名为activemq
+RUN cd /home/ && tar -xvf apache-activemq-5.15.9-bin.tar.gz
+#创建log文件软连接，方便查看
+RUN ln -s /home/apache-activemq-5.15.9/data/activemq.log /root/activemq.log 
+
+#启动activemq
+ENTRYPOINT /home/apache-activemq-5.15.9/bin/activemq start && /bin/bash
+
+#暴露端口
+EXPOSE 61616 8161
